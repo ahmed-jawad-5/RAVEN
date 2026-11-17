@@ -17,7 +17,12 @@ EVAL_SUMMARY_CSV = DATA_DIR / "evaluation_summary.csv"
 SPLIT_SEED = 42
 TEST_SIZE = 0.2
 
-SEED = 42                 # seed for candidate ordering
+# --- Team split: each member reviews a different slice of the data -----------
+NUM_MEMBERS = 5           # same on every laptop
+MEMBER_ID = 1             # CHANGE PER LAPTOP: 1, 2, 3, 4 or 5
+
+# --- Everything below must be IDENTICAL on every laptop ----------------------
+SEED = 42                 # seed for review order and candidate ordering
 MAX_MODS = 2              # max modifications per candidate (words or characters)
 MAX_CANDIDATES = 30       # max model queries per sentence per attack
 

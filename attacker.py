@@ -2,6 +2,8 @@
 
   python attacker.py        -> reviews TRAIN split (approved samples can go to training data)
   python attacker.py test   -> reviews TEST split (meaning check only, never used for training)
+
+Each team member (config.MEMBER_ID) reviews their own non-overlapping slice of the data.
 """
 import csv
 import random
@@ -187,13 +189,18 @@ def main():
         if sys.argv[1] != "test":
             sys.exit("Usage: python attacker.py [test]")
         split = "test"
+    if not 1 <= config.MEMBER_ID <= config.NUM_MEMBERS:
+        sys.exit("ERROR: MEMBER_ID must be between 1 and NUM_MEMBERS in config.py")
     model = load_goku()
     prepare_data()
-    data = load_split(split).sample(frac=1, random_state=config.SEED)   # fixed review order
+    data = load_split(split).sample(frac=1, random_state=config.SEED)   # same order on every laptop
+    data = data.iloc[config.MEMBER_ID - 1::config.NUM_MEMBERS]          # this member's own slice
     done = already_reviewed(split)
     available = [a for a, on in config.ENABLED_ATTACKS.items() if on]
     enabled = choose_attacks(available)
-    print(f"\nSplit: {split} | attacks: {', '.join(enabled)} | already reviewed: {len(done)}")
+    print(f"\nMember {config.MEMBER_ID} of {config.NUM_MEMBERS} | split: {split} "
+          f"({len(data)} sentences in your slice) | attacks: {', '.join(enabled)} "
+          f"| already reviewed: {len(done)}")
     print("Type q at any prompt to quit (progress is saved after every review).")
 
     for sid, row in data.iterrows():
@@ -224,7 +231,7 @@ def main():
                 "placement": placement, "sample_type": sample_type})
             print("\nSample saved successfully.")
             ask("Press ENTER to continue to the next attack...", {""})
-    print("\nAll sentences reviewed for the selected attacks.")
+    print("\nAll sentences in your slice reviewed for the selected attacks.")
 
 
 if __name__ == "__main__":
